@@ -1,0 +1,64 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/Users/asalamon/Documents/random/clock-clock-24/include",
+                "/Users/asalamon/Documents/random/clock-clock-24/src",
+                "/Users/asalamon/Documents/random/clock-clock-24/lib/AccelStepper/src",
+                "/Users/asalamon/Documents/random/clock-clock-24/lib/ShiftRegister74HC595/src",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                "/Users/asalamon/Documents/random/clock-clock-24/lib/SwitecX25",
+                "/Users/asalamon/Documents/random/clock-clock-24/.pio/libdeps/nanoatmega328/AccelStepper/src",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/Users/asalamon/Documents/random/clock-clock-24/include",
+                    "/Users/asalamon/Documents/random/clock-clock-24/src",
+                    "/Users/asalamon/Documents/random/clock-clock-24/lib/AccelStepper/src",
+                    "/Users/asalamon/Documents/random/clock-clock-24/lib/ShiftRegister74HC595/src",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                    "/Users/asalamon/Documents/random/clock-clock-24/lib/SwitecX25",
+                    "/Users/asalamon/Documents/random/clock-clock-24/.pio/libdeps/nanoatmega328/AccelStepper/src",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "/Users/asalamon/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60106",
+                "ARDUINO_AVR_NANO",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "/Users/asalamon/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
