@@ -12,6 +12,10 @@ void board_begin();
 
 void board_loop();
 
+bool clock_is_running(int index);
+
 void set_clock(int index, t_clock state);
+
+void zero_clock(int index);
 
 #endif // BOARD_H

@@ -1,72 +1,102 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include "i2c.h"
-#include "clock_state.h"
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 
-const int I2C_ADDR[3]  = {0x08, 0x09, 0x10};
-const t_clock default_clock = {0, 0, 0, 0, 0, 0, 0, 0};
-t_full_clock clocks;
+#include "clock_manager.h"
+#include "digits.h"
+#include "web_server.h"
+#include "ntp.h"
 
-uint16_t counter = 1;
-int clock_addr_index = 0;
+const char *ssid = "Crookienet_b22";
+const char *password = "Crookshanks4301";
+
+ClockWebServer web_server;
 
 
 void setup()
 {
   // initialize digital pin LED_BUILTIN as an output.
+
   Serial.begin(9600);
-  Wire.begin();
+  Serial.println("Booting");
 
-  clocks = {{default_clock, default_clock, default_clock, default_clock}};
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  for (int i = 0; i < 4; i++)
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
-      clocks.clocks[i].speed_h = 2000;
-      clocks.clocks[i].speed_m = 2000;
-      clocks.clocks[i].accel_h = 500;
-      clocks.clocks[i].accel_m = 500;
-      clocks.clocks[i].direction_h = 0;
-      clocks.clocks[i].direction_m = 1;
+    Serial.println("Connection Failed! Rebooting...");
+    delay(5000);
+    ESP.restart();
   }
+
+  ArduinoOTA
+      .onStart([]()
+               {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH)
+        type = "sketch";
+      else // U_SPIFFS
+        type = "filesystem";
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type); })
+      .onEnd([]()
+             { Serial.println("\nEnd"); })
+      .onProgress([](unsigned int progress, unsigned int total)
+                  { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); })
+      .onError([](ota_error_t error)
+               {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
+
+  ArduinoOTA.begin();
+
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  begin_NTP();
+  setSyncProvider(get_NTP_time);
+  // Sync every 30 minutes
+  setSyncInterval(60 * 30);
+
+  Wire.begin();
+  web_server.begin(&clock_manager);
+
+  clock_manager.setHourDirection(CLOCKWISE1);
+  clock_manager.setMinuteDirection(COUNTERCLOCKWISE1);
+  clock_manager.setHourSpeed(800.0);
+  clock_manager.setMinuteSpeed(1400.0);
+
+  clock_manager.sendFullClocks();
+ // delay(15000);
+
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
+int digit_index = 0;
+unsigned long time_last;
+int last_hour = -1;
+int last_minute = -1;
+
+#define SECOND 1000
 
 // the loop function runs over and over again forever
 void loop()
 {
-  // Read serial, and have 3 commands to send to the arduino
+  ArduinoOTA.handle();
+  web_server.update();
 
-      for (int i = 0; i < 4; i++)
-      {
-        clocks.clocks[i].angle_h = 0;
-        clocks.clocks[i].angle_m = 0;
-        clocks.clocks[i].direction_h = random(1);
-        clocks.clocks[i].direction_m = random(1);
-      }
-
-      for (int i = 0; i < 2; i++)
-        {
-         t_half_clock to_send;
-          to_send.clocks[0] = clocks.clocks[0 + i];
-          to_send.clocks[1] = clocks.clocks[1 + i];
-          to_send.change_counter[0] = counter;
-          to_send.change_counter[1] = counter;
-
-
-          Wire.beginTransmission(I2C_ADDR[clock_addr_index]);
-          I2C_writeAnything(to_send);
-          Wire.endTransmission();
-      }
-      
-
-     
-      clock_addr_index++;
-      counter++;
-
-      if (clock_addr_index > 2)
-          clock_addr_index = 0;
-
-      delay(2000);
-  
+  if (last_hour != hour() || last_minute != minute())
+  {
+    last_hour = hour();
+    last_minute = minute();
+    clock_manager.setTime(last_hour, last_minute);
+    clock_manager.sendFullClocks();
+  }
 }

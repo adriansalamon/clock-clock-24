@@ -3,7 +3,15 @@
 
 enum directions {
     CLOCKWISE,
-    COUNTERCLOCKWISE
+    CLOCKWISE1, // One extra revolution
+    CLOCKWISE2, // Two extra revolutions
+    CLOCKWISE3, // Three extra revolutions
+    COUNTERCLOCKWISE,
+    COUNTERCLOCKWISE1, // One extra revolution
+    COUNTERCLOCKWISE2, // Two extra revolutions
+    COUNTERCLOCKWISE3, // Three extra revolutions
+    CLOSEST, // Closest direction
+    ZERO // Zero the clock
 };
 
 typedef struct clock_state {

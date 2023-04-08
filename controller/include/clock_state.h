@@ -1,9 +1,21 @@
 #ifndef CLOCK_STATE_H
 #define CLOCK_STATE_H
 
+#include <Arduino.h>
+
+// SHARED STATE WITH BOARDS
+
 enum directions {
     CLOCKWISE,
-    COUNTERCLOCKWISE
+    CLOCKWISE1, // One extra revolution
+    CLOCKWISE2, // Two extra revolutions
+    CLOCKWISE3, // Three extra revolutions
+    COUNTERCLOCKWISE,
+    COUNTERCLOCKWISE1, // One extra revolution
+    COUNTERCLOCKWISE2, // Two extra revolutions
+    COUNTERCLOCKWISE3, // Three extra revolutions
+    CLOSEST, // Closest direction
+    ZERO // Calibrate to zero
 };
 
 typedef struct clock_state {
@@ -26,5 +38,27 @@ typedef struct clock {
   t_clock clocks[4];
   uint16_t change_counter[4];
 } t_full_clock;
+
+// CONTROLLER STATE ONLY
+
+#define NUM_CLOCKS 6
+#define NUM_CLOCKS_PER_BOARD 4
+
+typedef struct lite_clock {
+    uint32_t angle_h;
+    uint32_t angle_m;
+} t_lite_clock;
+
+typedef struct half_digit {
+    t_lite_clock lite_clock[3];
+} t_half_digit;
+
+typedef struct digit {
+    t_lite_clock lite_clock[6]; // 6 clocks per digit   
+} t_digit;
+
+typedef struct full_digits {
+    t_digit digits[4];
+} t_full_digits;
 
 #endif // CLOCK_STATE_H
