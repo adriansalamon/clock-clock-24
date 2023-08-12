@@ -24,7 +24,21 @@ void ClockWebServer::update()
 
 void handle_get()
 {
-    _server.send(200, "text/plain", "Hello, world");
+    config cfg = clock_manager.getConfig();
+    
+    String message = "{"; // Start JSON
+    message = message + "\"hour_speed\":" + cfg.hour_speed + ",";
+    message = message + "\"minute_speed\":" + cfg.minute_speed + ",";
+    message = message + "\"hour_accel\":" + cfg.hour_accel + ",";
+    message = message + "\"minute_accel\":" + cfg.minute_accel + ",";
+    message = message + "\"hour_dir\":" + cfg.hour_direction + ",";
+    message = message + "\"minute_dir\":" + cfg.minute_direction + ",";
+    message = message + "\"mode\":" + cfg.set_mode + ",";
+    message = message + "\"hour\":" + cfg.hour + ",";
+    message = message + "\"minute\":" + cfg.minute;
+    message += "}"; // End JSON
+
+    _server.send(200, "application/json",  message);
 }
 
 void handle_set()
@@ -97,28 +111,35 @@ void handle_set()
         message += "\n";
         clock_manager.setMinuteDirection(minute_direction);
     }
+    if (doc.containsKey("hour") && doc.containsKey("minute"))
+    {
+        int hour = doc["hour"]; // 04
+        int minute = doc["minute"]; // 20
+        message += "Set time to:\n";
+        message += hour;
+        message += ":";
+        message += minute;
+        message += "\n";
+        clock_manager.setTime(hour, minute);        
+    }
     if (doc.containsKey("mode"))
     {
-        if (strcmp(doc["mode"], "line") == 0) {
-            message += "Set clock to line\n";
-            clock_manager.setWholeClock(clock_line);
-        } else if (strcmp(doc["mode"], "happy") == 0) {
-            message += "Set clock to happy\n";
-            clock_manager.setWholeClock(clock_happy);
-        }
-        
-    }
-    else if (doc.containsKey("time"))
-    {
-        int time = doc["time"]; // 1232
-        message += "Set clock to:\n";
-        message += time;
-        message += "\n";
+        mode mode = doc["mode"];
+        if (mode < CALM || mode > MANUAL) {
+            message += "Invalid mode. Mode must be between 0 and 2\n";
+        } else {
+            message += "Set mode to: ";
+            message += mode;
+            message += "\n";
+            clock_manager.setMode(mode);
 
-        clock_manager.setWholeClock(digits_from_number(time));
-    }
-
-    clock_manager.sendFullClocks();
+            if (mode == MANUAL) {
+                message += "Manual mode set. Sending full clocks\n";
+                clock_manager.sendFullClocks();
+            }
+        }        
+    }   
+    
     _server.send(200, "text/plain", message);
 }
 

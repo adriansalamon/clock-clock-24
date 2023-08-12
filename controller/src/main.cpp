@@ -97,6 +97,9 @@ void loop()
     last_hour = hour();
     last_minute = minute();
     clock_manager.setTime(last_hour, last_minute);
-    clock_manager.sendFullClocks();
+    if (clock_manager.getConfig().set_mode != MANUAL)
+    {
+      clock_manager.sendFullClocks();
+    }
   }
 }

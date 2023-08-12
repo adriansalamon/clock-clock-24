@@ -95,6 +95,9 @@ const t_digit digits[10] = {
     digit_8,
     digit_9};
 
+//  |
+//  .
+//  |
 const t_digit digit_I = {
     270, 90,
     270, 90,
@@ -103,6 +106,20 @@ const t_digit digit_I = {
     270, 90,
     270, 90};
 
+//   /
+//  .
+// /
+const t_digit digit_I_angle = {
+    225, 45,
+    225, 45,
+    225, 45,
+    225, 45,
+    225, 45,
+    225, 45};
+
+//  |
+//  .
+//
 const t_digit digit_null = {
     0, 0,
     0, 0,
@@ -111,6 +128,8 @@ const t_digit digit_null = {
     0, 0,
     0, 0};
 
+// \ /
+//  .
 const t_digit digit_happy = {
     45, 315,
     45, 315,
@@ -122,6 +141,8 @@ const t_digit digit_happy = {
 const t_full_digits clock_null = {digit_null, digit_null, digit_null, digit_null};
 
 const t_full_digits clock_line = {digit_I, digit_I, digit_I, digit_I};
+
+const t_full_digits clock_line_angle = {digit_I_angle, digit_I_angle, digit_I_angle, digit_I_angle};
 
 const t_full_digits clock_happy = {digit_happy, digit_happy, digit_happy, digit_happy};
 

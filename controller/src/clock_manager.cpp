@@ -2,6 +2,8 @@
 
 int I2C_ADDR[6] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 
+CircularBuffer<animation, 8> animation_queue;
+
 ClockManager clock_manager = ClockManager(I2C_ADDR);
 
 const t_clock default_clock = {
@@ -11,8 +13,8 @@ const t_clock default_clock = {
     .speed_m = 2000,
     .accel_h = 500,
     .accel_m = 500,
-    .direction_h = CLOCKWISE,
-    .direction_m = CLOCKWISE};
+    .direction_h = CLOSEST,
+    .direction_m = CLOSEST};
 
 ClockManager::ClockManager(int board_addrs[NUM_CLOCKS])
 {
@@ -28,10 +30,13 @@ ClockManager::ClockManager(int board_addrs[NUM_CLOCKS])
             _boards[i].change_counter[j] = 1;
         }
     }
+
+    memcpy(_boards_send_buf, _boards, sizeof(_boards));
 }
 
 void ClockManager::setHourSpeed(uint16_t speed)
 {
+    _hourSpeed = speed;
     for (int i = 0; i < NUM_CLOCKS; i++)
     {
         for (int j = 0; j < NUM_CLOCKS_PER_BOARD; j++)
@@ -44,6 +49,7 @@ void ClockManager::setHourSpeed(uint16_t speed)
 
 void ClockManager::setMinuteSpeed(uint16_t speed)
 {
+    _minuteSpeed = speed;
     for (int i = 0; i < NUM_CLOCKS; i++)
     {
         for (int j = 0; j < NUM_CLOCKS_PER_BOARD; j++)
@@ -56,6 +62,7 @@ void ClockManager::setMinuteSpeed(uint16_t speed)
 
 void ClockManager::setHourAccel(uint16_t accel)
 {
+    _hourAccel = accel;
     for (int i = 0; i < NUM_CLOCKS; i++)
     {
         for (int j = 0; j < NUM_CLOCKS_PER_BOARD; j++)
@@ -68,6 +75,7 @@ void ClockManager::setHourAccel(uint16_t accel)
 
 void ClockManager::setMinuteAccel(uint16_t accel)
 {
+    _minuteAccel = accel;
     for (int i = 0; i < NUM_CLOCKS; i++)
     {
         for (int j = 0; j < NUM_CLOCKS_PER_BOARD; j++)
@@ -80,6 +88,7 @@ void ClockManager::setMinuteAccel(uint16_t accel)
 
 void ClockManager::setHourDirection(uint8_t direction)
 {
+    _hourDirection = direction;
     for (int i = 0; i < NUM_CLOCKS; i++)
     {
         for (int j = 0; j < NUM_CLOCKS_PER_BOARD; j++)
@@ -92,6 +101,7 @@ void ClockManager::setHourDirection(uint8_t direction)
 
 void ClockManager::setMinuteDirection(uint8_t direction)
 {
+    _minuteDirection = direction;
     for (int i = 0; i < NUM_CLOCKS; i++)
     {
         for (int j = 0; j < NUM_CLOCKS_PER_BOARD; j++)
@@ -106,6 +116,65 @@ void ClockManager::setClock(t_clock clock, int board, int clock_num)
 {
     _boards[board].clocks[clock_num] = clock;
     _boards[board].change_counter[clock_num]++;
+}
+
+void ClockManager::send()
+{
+    for (int i = 0; i < NUM_CLOCKS; i++)
+    {
+        memcpy(_boards_send_buf, _boards, sizeof(_boards));
+        sendFullClock(i);
+    }
+}
+
+void ClockManager::sendWithRipple(ripple ripple_from, int delay_time)
+{
+    if (ripple_from == RIPPLE_LEFT)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            for (int board = 0; board < 3; board++)
+            {
+                _boards_send_buf[board].clocks[i] = _boards[board].clocks[i];
+                _boards_send_buf[board].change_counter[i] = _boards[board].change_counter[i];
+                sendFullClock(board);
+            }
+            delay(delay_time);
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            for (int board = 3; board < 6; board++)
+            {
+                _boards_send_buf[board].clocks[i] = _boards[board].clocks[i];
+                _boards_send_buf[board].change_counter[i] = _boards[board].change_counter[i];
+                sendFullClock(board);
+            }
+            delay(delay_time);
+        }
+    }
+    else if (ripple_from == RIPPLE_RIGHT)
+    {
+        for (int i = 3; i >= 0; i--)
+        {
+            for (int board = 3; board < 6; board++)
+            {
+                _boards_send_buf[board].clocks[i] = _boards[board].clocks[i];
+                _boards_send_buf[board].change_counter[i] = _boards[board].change_counter[i];
+                sendFullClock(board);
+            }
+            delay(delay_time);
+        }
+        for (int i = 3; i >= 0; i--)
+        {
+            for (int board = 0; board < 3; board++)
+            {
+                _boards_send_buf[board].clocks[i] = _boards[board].clocks[i];
+                _boards_send_buf[board].change_counter[i] = _boards[board].change_counter[i];
+                sendFullClock(board);
+            }
+            delay(delay_time);
+        }
+    }
 }
 
 void ClockManager::setHalfDigit(int index, t_half_digit digit)
@@ -149,10 +218,10 @@ void ClockManager::sendFullClock(int board)
     for (int i = 0; i < 2; i++)
     {
         t_half_clock to_send;
-        to_send.clocks[0] = _boards[board].clocks[i * 2];
-        to_send.clocks[1] = _boards[board].clocks[(i * 2) + 1];
-        to_send.change_counter[0] = _boards[board].change_counter[i * 2];
-        to_send.change_counter[1] = _boards[board].change_counter[(i * 2) + 1];
+        to_send.clocks[0] = _boards_send_buf[board].clocks[i * 2];
+        to_send.clocks[1] = _boards_send_buf[board].clocks[(i * 2) + 1];
+        to_send.change_counter[0] = _boards_send_buf[board].change_counter[i * 2];
+        to_send.change_counter[1] = _boards_send_buf[board].change_counter[(i * 2) + 1];
 
         Wire.beginTransmission(_board_addrs[board]);
         I2C_writeAnything(to_send);
@@ -160,10 +229,154 @@ void ClockManager::sendFullClock(int board)
     }
 }
 
+void ClockManager::resetAnimationQueue()
+{
+    animation_queue.clear();
+    if (_mode == CALM)
+    {
+        animation_queue.push(ANIM_CLOSEST);
+    }
+    else if (_mode == MODERATE)
+    {
+        animation anims[] = MODERATE_ANIMATIONS;
+
+        // Shuffle the array
+        const int num_anims = sizeof(anims) / sizeof(anims[0]);
+        for (int i = 0; i < num_anims; i++)
+        {
+            int n = random(0, num_anims);
+            animation tmp = anims[n];
+            anims[n] = anims[i];
+            anims[i] = tmp;
+        }
+
+        for (int i = 0; i < num_anims; i++)
+        {
+            animation_queue.push(anims[i]);
+        }
+    }
+    else if (_mode == LIVELY)
+    {
+        animation anims[] = LIVELY_ANIMATIONS;
+
+        // Shuffle the array
+        const int num_anims = sizeof(anims) / sizeof(anims[0]);
+        for (int i = 0; i < num_anims; i++)
+        {
+            int n = random(0, num_anims);
+            animation tmp = anims[n];
+            anims[n] = anims[i];
+            anims[i] = tmp;
+        }
+
+        for (int i = 0; i < num_anims; i++)
+        {
+            animation_queue.push(anims[i]);
+        }
+    } else if (_mode == MANUAL) {
+        animation_queue.push(ANIM_NONE);
+    }
+}
+
 void ClockManager::sendFullClocks()
 {
-    for (int i = 0; i < NUM_CLOCKS; i++)
-        sendFullClock(i);
+    animation anim = animation_queue.shift();
+    if (anim == ANIM_CLOSEST)
+    {
+        setMinuteDirection(CLOSEST);
+        setHourDirection(CLOSEST);
+        setMinuteSpeed(800);
+        setHourSpeed(800);
+        setMinuteAccel(200);
+        setHourAccel(200);
+
+        send();
+    }
+    else if (anim == ANIM_LINE_CLOCKWISE)
+    {
+        setMinuteDirection(CLOSEST);
+        setHourDirection(CLOSEST);
+        setMinuteSpeed(1200);
+        setHourSpeed(1200);
+        setMinuteAccel(300);
+        setHourAccel(300);
+
+        setWholeClock(clock_line_angle);
+        send();
+
+        setTime(_hour, _minute);
+        setMinuteDirection(CLOCKWISE1);
+        setHourDirection(CLOCKWISE1);
+        setMinuteSpeed(300);
+        setHourSpeed(300);
+        setMinuteAccel(60);
+        setHourAccel(60);
+        delay(4000);
+
+        sendWithRipple(RIPPLE_RIGHT, 400);
+    }
+    else if (anim == ANIM_LINE_COUNTERCLOCKWISE)
+    {
+        setMinuteDirection(CLOSEST);
+        setHourDirection(CLOSEST);
+        setMinuteSpeed(1200);
+        setHourSpeed(1200);
+        setMinuteAccel(300);
+        setHourAccel(300);
+
+        setWholeClock(clock_line);
+        send();
+
+        setTime(_hour, _minute);
+        setMinuteDirection(COUNTERCLOCKWISE1);
+        setHourDirection(COUNTERCLOCKWISE1);
+        setMinuteSpeed(300);
+        setHourSpeed(300);
+        setMinuteAccel(60);
+        setHourAccel(60);
+        delay(4000);
+
+        sendWithRipple(RIPPLE_LEFT, 400);
+    } else if (anim == ANIM_NONE) {
+        send(); 
+    }
+
+    if (animation_queue.isEmpty())
+    {
+        resetAnimationQueue();
+    }
+
+    // if (_ripple)
+    // {
+    //     // for (int i = 0; i < 4; i++) {
+    //     //     int board = 1;
+    //     //     _boards_send_buf[board].clocks[1] = _boards[board].clocks[1];
+    //     //     _boards_send_buf[board].change_counter[1] = _boards[board].change_counter[1];
+
+    //     //     sendFullClock(board);
+    //     //     delay(100);
+    //     // }
+    //     for (int i = 0; i < 4; i++)
+    //     {
+    //         for (int board = 0; board < 3; board++)
+    //         {
+    //             _boards_send_buf[board].clocks[i] = _boards[board].clocks[i];
+    //             _boards_send_buf[board].change_counter[i] = _boards[board].change_counter[i];
+    //             sendFullClock(board);
+    //         }
+    //         delay(400);
+    //     }
+    //     for (int i = 0; i < 4; i++)
+    //     {
+    //         for (int board = 3; board < 6; board++)
+    //         {
+    //             _boards_send_buf[board].clocks[i] = _boards[board].clocks[i];
+    //             _boards_send_buf[board].change_counter[i] = _boards[board].change_counter[i];
+    //             sendFullClock(board);
+    //         }
+    //         delay(400);
+    //     }
+    // }
 }
 
 void ClockManager::sendDigit(int index)
@@ -190,8 +403,31 @@ void ClockManager::sendHalfDigit(int index)
 
 void ClockManager::setTime(int hour, int minute)
 {
+    _hour = hour;
+    _minute = minute;
     t_full_digits digits = digits_from_number(hour * 100 + minute);
     setWholeClock(digits);
+}
+
+void ClockManager::setMode(mode mode)
+{
+    _mode = mode;
+    resetAnimationQueue();
+}
+
+config ClockManager::getConfig() {
+    config config = {
+        .hour_speed = _hourSpeed,
+        .minute_speed = _minuteSpeed,
+        .hour_accel = _hourAccel,
+        .minute_accel = _minuteAccel,
+        .hour_direction = _hourDirection,
+        .minute_direction = _minuteDirection,
+        .set_mode = _mode,
+        .hour = _hour,
+        .minute = _minute
+    };
+    return config;
 }
 
 t_digit get_digit(int number)
@@ -215,7 +451,8 @@ t_half_digit get_right_half_digit(t_digit digit)
     return half_digit;
 }
 
-t_full_digits digits_from_number(int number) {
+t_full_digits digits_from_number(int number)
+{
 
     if (number < 0 || number > 9999)
         return clock_null;

@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .digit {
+    float: left;
+  }
+
+  .clock {
+    --small-hand: -135deg;
+    --large-hand: -45deg;
+
+    border-radius: 50%;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+
+    @apply float-left m-1;
+  }
+
+  .clock:nth-of-type(2n + 1) {
+    clear: left;
+  }
+
+  .clock-smallHand,
+  .clock-largeHand {
+    transform-origin: 50px center;
+    transition: transform 10s;
+  }
+
+  .clock-smallHand {
+    transform: rotateZ(var(--small-hand));
+  }
+
+  .clock-largeHand {
+    transform: rotateZ(var(--large-hand));
+  }
+
+  .s-hidden {
+    display: none;
+  }
+
+  .trigger {
+    position: fixed;
+    bottom: 0;
+    width: 25%;
+    height: 5vw;
+    cursor: help;
+  }
+
+  .trigger--left {
+    left: 0;
+  }
+
+  .trigger--right {
+    right: 0;
+  }
+}
