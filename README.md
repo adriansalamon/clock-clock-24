@@ -3,7 +3,7 @@
 My own take/version of the ClockClock 24 by [Humans Since 1982](https://www.humanssince1982.com) - A digital clock made from 24 analog clocks.
 All credit goes to them for coming up with such an awesome design.
 
-<video src="clockclock.mp4">
+[![Video](https://img.youtube.com/vi/78b-10ijSYw/maxresdefault.jpg)](https://www.youtube.com/watch?v=78b-10ijSYw)
 
 My version is made 100% from scratch using my own hardware design.
 Mine is also slightly smaller, made to fit perfectly on my shelf.
