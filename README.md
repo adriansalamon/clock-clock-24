@@ -1,9 +1,7 @@
-### My own ClockClock 24 replica
+## My own ClockClock 24 replica
 
-My own take/version of the ClockClock 24 by [Humans Since 1982](https://www.humanssince1982.com)
-
-- A digital clock made from 24 analog clocks.
-  All credit goes to them for coming up with such an awesome design.
+My own take/version of the ClockClock 24 by [Humans Since 1982](https://www.humanssince1982.com) - A digital clock made from 24 analog clocks.
+All credit goes to them for coming up with such an awesome design.
 
 My version is made 100% from scratch using my own hardware design.
 Mine is also slightly smaller, made to fit perfectly on my shelf.
