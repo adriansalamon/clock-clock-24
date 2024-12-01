@@ -89,7 +89,7 @@ private:
     int _board_addrs[NUM_CLOCKS];
     t_full_clock _boards[NUM_CLOCKS];
     t_full_clock _boards_send_buf[NUM_CLOCKS];
-    mode _mode = LIVELY;
+    mode _mode = CALM;
 
     uint16_t _hour = 0;
     uint16_t _minute = 0;

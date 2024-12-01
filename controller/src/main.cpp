@@ -13,7 +13,6 @@ const char *password = "Crookshanks4301";
 
 ClockWebServer web_server;
 
-
 void setup()
 {
   // initialize digital pin LED_BUILTIN as an output.
@@ -74,7 +73,7 @@ void setup()
   clock_manager.setMinuteSpeed(1400.0);
 
   clock_manager.sendFullClocks();
- // delay(15000);
+  // delay(15000);
 
   pinMode(LED_BUILTIN, OUTPUT);
 }

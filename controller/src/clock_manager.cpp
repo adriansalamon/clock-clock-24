@@ -273,7 +273,9 @@ void ClockManager::resetAnimationQueue()
         {
             animation_queue.push(anims[i]);
         }
-    } else if (_mode == MANUAL) {
+    }
+    else if (_mode == MANUAL)
+    {
         animation_queue.push(ANIM_NONE);
     }
 }
@@ -337,8 +339,10 @@ void ClockManager::sendFullClocks()
         delay(4000);
 
         sendWithRipple(RIPPLE_LEFT, 400);
-    } else if (anim == ANIM_NONE) {
-        send(); 
+    }
+    else if (anim == ANIM_NONE)
+    {
+        send();
     }
 
     if (animation_queue.isEmpty())
@@ -415,7 +419,8 @@ void ClockManager::setMode(mode mode)
     resetAnimationQueue();
 }
 
-config ClockManager::getConfig() {
+config ClockManager::getConfig()
+{
     config config = {
         .hour_speed = _hourSpeed,
         .minute_speed = _minuteSpeed,
@@ -425,8 +430,7 @@ config ClockManager::getConfig() {
         .minute_direction = _minuteDirection,
         .set_mode = _mode,
         .hour = _hour,
-        .minute = _minute
-    };
+        .minute = _minute};
     return config;
 }
 
